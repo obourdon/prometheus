@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"math"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strconv"
 	"sync"
@@ -712,7 +713,11 @@ var userAgentHeader = fmt.Sprintf("Prometheus/%s", version.Version)
 
 func (s *targetScraper) scrape(ctx context.Context, w io.Writer) (string, error) {
 	if s.req == nil {
-		req, err := http.NewRequest("GET", s.URL().String(), nil)
+		unescapedPath, err := url.PathUnescape(s.URL().String())
+		if err != nil {
+			return "", err
+		}
+		req, err := http.NewRequest("GET", unescapedPath, nil)
 		if err != nil {
 			return "", err
 		}
